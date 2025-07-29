@@ -4,13 +4,11 @@ const TodoItem = ({ todo, onToggle, onDelete }) => {
       <div className="flex items-center">
         <input
           type="checkbox"
-          checked={todo.completed}
+          checked={todo.done}
           onChange={() => onToggle(todo.id)}
           className="mr-4"
         />
-        <span className={todo.completed ? "line-through" : ""}>
-          {todo.text}
-        </span>
+        <span className={todo.done ? "line-through" : ""}>{todo.text}</span>
       </div>
       <button
         onClick={() => onDelete(todo.id)}
@@ -20,5 +18,5 @@ const TodoItem = ({ todo, onToggle, onDelete }) => {
       </button>
     </div>
   );
-}
+};
 export default TodoItem;

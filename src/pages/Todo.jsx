@@ -1,24 +1,42 @@
 import TodoItem from "../components/TodoItem.jsx";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+const API_BASE = "https://todobackend-s9ip.onrender.com/todos";
 function Todo() {
   const [todos, setTodos] = useState([]);
   const [inputValue, setInputValue] = useState("");
+
+  useEffect(() => {
+    fetch(API_BASE)
+      .then((res) => res.json())
+      .then((data) => {
+        setTodos(data);
+      });
+  }, []);
+
   const addTodo = () => {
     if (inputValue.trim() === "") return;
-    const newTodo = {
-      id: Date.now(),
-      text: inputValue,
-      completed: false,
-    };
-    setTodos([...todos, newTodo]);
-    setInputValue("");
+    fetch(API_BASE, {
+      method: "POST",
+      headers: { "content-Type": "application/json" },
+      body: JSON.stringify({ text: inputValue }),
+    })
+      .then((res) => res.json())
+      .then((newTodo) => {
+        setTodos([...todos, newTodo]);
+        setInputValue("");
+      });
   };
   const onToggled = (id) => {
-    setTodos(
-      todos.map((todo) =>
-        todo.id === id ? { ...todo, completed: !todo.completed } : todo
-      )
-    );
+    fetch(`${API_BASE}/${id}`, {
+      method: "put",
+    })
+      .then((res) => res.json())
+      .then((updatedTodo) =>
+        setTodos(
+          todos.map((todo) => (todo.id === updatedTodo.id ? updatedTodo : todo))
+        )
+      );
   };
 
   return (
@@ -37,7 +55,9 @@ function Todo() {
           onChange={(e) => setInputValue(e.target.value)}
           className="border border-gray-300 rounded-lg p-2 mr-5 w-full max-w-md"
         />
-        <button onClick={addTodo} className="px-4 py-2 bg-green-500 rounded-xl">Add</button>
+        <button onClick={addTodo} className="px-4 py-2 bg-green-500 rounded-xl">
+          Add
+        </button>
       </div>
 
       <div className="w-full max-w-md mt-8">
@@ -46,9 +66,15 @@ function Todo() {
             key={todo.id}
             todo={todo}
             onToggle={onToggled}
-            onDelete={(id) => {
-              setTodos(todos.filter((t) => t.id !== id));
-            }}
+            onDelete={(id) =>
+              fetch(`${API_BASE}/${id}`, {
+                method: "Delete",
+              })
+                .then((res) => res.json())
+                .then(() => {
+                  setTodos(todos.filter((t) => t.id !== id));
+                })
+            }
           />
         ))}
       </div>
